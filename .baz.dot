@@ -1,0 +1,12 @@
+digraph "CFG for 'baz' function" {
+	label="CFG for 'baz' function";
+
+	Node0x5645284d8d70 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{entry:\l|  %ifcond = fcmp one double %x, 0.000000e+00\l  br i1 %ifcond, label %then, label %else\l|{<s0>T|<s1>F}}"];
+	Node0x5645284d8d70:s0 -> Node0x5645284d9890[tooltip="entry -> then\nProbability 62.50%" ];
+	Node0x5645284d8d70:s1 -> Node0x5645284d9900[tooltip="entry -> else\nProbability 37.50%" ];
+	Node0x5645284d9890 [shape=record,color="#b70d28ff", style=filled, fillcolor="#bb1b2c70" fontname="Courier",label="{then:\l|  %calltmp = call double @foo()\l  br label %ifcont\l}"];
+	Node0x5645284d9890 -> Node0x5645284d9b70[tooltip="then -> ifcont\nProbability 100.00%" ];
+	Node0x5645284d9900 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#c32e3170" fontname="Courier",label="{else:\l|  %calltmp1 = call double @bar()\l  br label %ifcont\l}"];
+	Node0x5645284d9900 -> Node0x5645284d9b70[tooltip="else -> ifcont\nProbability 100.00%" ];
+	Node0x5645284d9b70 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{ifcont:\l|  %iftmp = phi double [ %calltmp, %then ], [ %calltmp1, %else ]\l  ret double %iftmp\l}"];
+}
