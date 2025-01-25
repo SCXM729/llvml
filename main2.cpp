@@ -288,6 +288,7 @@ public:
   Value *codegen() override;
 };
 
+/// UnaryExprAST - Expression class for a unary operator
 class UnaryExprAST : public ExprAST {
   char Opcode;
   std::unique_ptr<ExprAST> Operand;
@@ -477,7 +478,7 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
 ///   ::= primary binoprhs
 ///
 static std::unique_ptr<ExprAST> ParseExpression() {
-  auto LHS = ParsePrimary();
+  auto LHS = ParseUnary();
   if (!LHS)
     return nullptr;
 
@@ -502,7 +503,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype() {
     getNextToken();
     break;
   case tok_unary:
-    getNextToken();
+    getNextToken(); // eat "unary"
     if (!isascii(CurTok))
       return LogErrorP("Expected unary operator");
     FnName = "unary";
@@ -748,7 +749,7 @@ Value *BinaryExprAST::codegen() {
 
 Value *CallExprAST::codegen() {
   // Look up the name in the global module table.
-  Function *CalleeF = TheModule->getFunction(Callee);
+  Function *CalleeF = getFunction(Callee);
   if (!CalleeF)
     return LogErrorV("Unknown function referenced");
 
@@ -1060,6 +1061,7 @@ static void HandleExtern() {
 
 static void HandleTopLevelExpression() {
   // Evaluate a top-level expression into an anonymous function.
+
   if (auto FnAST = ParseTopLevelExpr()) {
     if (FnAST->codegen()) {
       // create a ResourceTracker to track JIT'd memory allocation to our
@@ -1112,6 +1114,27 @@ static void MainLoop() {
   }
 }
 
+//===----------------------------------------------------------------------===//
+// "Library" functions that can be "extern'd" from user code.
+//===----------------------------------------------------------------------===//
+
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
+
+/// putchard - putchar that takes a double and returns 0.
+extern "C" DLLEXPORT double putchard(double X) {
+  fputc((char)X, stderr);
+  return 0;
+}
+
+/// printd - printf that takes a double prints it as "%f\n", returning 0.
+extern "C" DLLEXPORT double printd(double X) {
+  fprintf(stderr, "%f\n", X);
+  return 0;
+}
 //===----------------------------------------------------------------------===//
 // Main driver code.
 //===----------------------------------------------------------------------===//
